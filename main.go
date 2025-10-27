@@ -1,0 +1,80 @@
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+)
+
+type Todo struct {
+	gorm.Model
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+func main() {
+	router := gin.Default()
+
+	db, err := gorm.Open(sqlite.Open("todo.db"), &gorm.Config{})
+
+	if err != nil {
+		panic("Unable to connect to the database")
+	}
+
+	db.AutoMigrate(&Todo{})
+
+	router.GET("/todos", func(c *gin.Context) {
+		var todos []Todo
+		db.Find(&todos)
+		c.JSON(200, todos)
+	})
+
+	router.POST("/todos", func(c *gin.Context) {
+		var todo Todo
+		if err := c.BindJSON(&todo); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		db.Create(&todo)
+		c.JSON(201, todo)
+	})
+
+	router.GET("/todos/:id", func(c *gin.Context) {
+		var todo Todo
+		todoId := c.Param("id")
+		if err := db.Where("id = ?", todoId).First(&todo).Error; err != nil {
+			c.JSON(404, gin.H{"error": "Todo not found"})
+			return
+		}
+		c.JSON(200, todo)
+	})
+
+	router.PUT("/todos/:id", func(c *gin.Context) {
+		var todo Todo
+		todoId := c.Param("id")
+		if err := db.Where("id = ?", todoId).First(&todo).Error; err != nil {
+			c.JSON(404, gin.H{"error": "Todo not found"})
+			return
+		}
+		if err := c.BindJSON(&todo); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		db.Save(&todo)
+		c.JSON(200, todo)
+	})
+
+	router.DELETE("/todos/:id", func(c *gin.Context) {
+		var todo Todo
+		todoId := c.Param("id")
+		if err := db.Where("id = ?", todoId).First(&todo).Error; err != nil {
+			c.JSON(404, gin.H{"error": "Todo not found"})
+			return
+		}
+		db.Delete(&todo)
+		c.JSON(200, gin.H{"message": "Todo deleted"})
+	})
+
+	router.Run(":8080")
+
+}
