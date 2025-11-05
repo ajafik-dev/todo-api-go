@@ -45,3 +45,5 @@ require (
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.0
 )
+
+replace ajafik.com/todo/ => ../

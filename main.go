@@ -1,41 +1,20 @@
 package main
 
 import (
-	"log"
-	"os"
 	"strconv"
-	"time"
 
+	"ajafik.com/todo/middlewares"
+	"ajafik.com/todo/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-type Todo struct {
-	gorm.Model
-	Title       string `json:"title"`
-	Description string `json:"description"`
-}
-
-type User struct {
-	ID    int    `json:"id" form:"id"`
-	Name  string `json:"name" form:"name"`
-	Email string `json:"email" form:"email"`
-}
-
-func LoggerMiddleware() gin.HandlerFunc {
-	logger := log.New(os.Stdout, "LOG:: ", log.LstdFlags)
-	return func(c *gin.Context) {
-		start := time.Now()
-		c.Next()
-		logger.Printf("%s %s %d %s", c.Request.Method, c.Request.URL.Path, c.Writer.Status(), time.Since(start))
-	}
-}
 
 func main() {
 	router := gin.Default()
 
-	router.Use(LoggerMiddleware())
+	router.Use(middlewares.LoggerMiddleware())
 
 	db, err := gorm.Open(sqlite.Open("todo.db"), &gorm.Config{})
 
@@ -43,16 +22,16 @@ func main() {
 		panic("Unable to connect to the database")
 	}
 
-	db.AutoMigrate(&Todo{})
+	db.AutoMigrate(&models.Todo{})
 
 	router.GET("/todos", func(c *gin.Context) {
-		var todos []Todo
+		var todos []models.Todo
 		db.Find(&todos)
 		c.JSON(200, todos)
 	})
 
 	router.POST("/todos", func(c *gin.Context) {
-		var todo Todo
+		var todo models.Todo
 		if err := c.BindJSON(&todo); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
@@ -62,7 +41,7 @@ func main() {
 	})
 
 	router.GET("/todos/:id", func(c *gin.Context) {
-		var todo Todo
+		var todo models.Todo
 		todoId := c.Param("id")
 		if err := db.Where("id = ?", todoId).First(&todo).Error; err != nil {
 			c.JSON(404, gin.H{"error": "Todo not found"})
@@ -72,7 +51,7 @@ func main() {
 	})
 
 	router.PUT("/todos/:id", func(c *gin.Context) {
-		var todo Todo
+		var todo models.Todo
 		todoId := c.Param("id")
 		if err := db.Where("id = ?", todoId).First(&todo).Error; err != nil {
 			c.JSON(404, gin.H{"error": "Todo not found"})
@@ -87,7 +66,7 @@ func main() {
 	})
 
 	router.DELETE("/todos/:id", func(c *gin.Context) {
-		var todo Todo
+		var todo models.Todo
 		todoId := c.Param("id")
 		if err := db.Where("id = ?", todoId).First(&todo).Error; err != nil {
 			c.JSON(404, gin.H{"error": "Todo not found"})
@@ -98,7 +77,7 @@ func main() {
 	})
 
 	router.POST("/json", func(c *gin.Context) {
-		var user User
+		var user models.User
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
@@ -107,7 +86,7 @@ func main() {
 	})
 
 	router.POST("/form", func(ctx *gin.Context) {
-		var user User
+		var user models.User
 		if err := ctx.Bind(&user); err != nil {
 			ctx.JSON(400, gin.H{"error": err.Error()})
 			return
