@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -73,6 +75,19 @@ func main() {
 		}
 		db.Delete(&todo)
 		c.JSON(200, gin.H{"message": "Todo deleted"})
+	})
+
+	router.GET("/divide/:a/:b", func(c *gin.Context) {
+		a := c.Param("a")
+		b := c.Param("b")
+
+		if b == "0" {
+			c.JSON(400, gin.H{"error": "Cannot divide by zero"})
+			return
+		}
+		floatA, _ := strconv.ParseFloat(a, 32)
+		floatB, _ := strconv.ParseFloat(b, 32)
+		c.JSON(200, gin.H{"result": floatA / floatB})
 	})
 
 	router.Run(":8080")
