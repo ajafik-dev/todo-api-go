@@ -1,7 +1,10 @@
 package main
 
 import (
+	"log"
+	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
@@ -20,8 +23,19 @@ type User struct {
 	Email string `json:"email" form:"email"`
 }
 
+func LoggerMiddleware() gin.HandlerFunc {
+	logger := log.New(os.Stdout, "LOG:: ", log.LstdFlags)
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		logger.Printf("%s %s %d %s", c.Request.Method, c.Request.URL.Path, c.Writer.Status(), time.Since(start))
+	}
+}
+
 func main() {
 	router := gin.Default()
+
+	router.Use(LoggerMiddleware())
 
 	db, err := gorm.Open(sqlite.Open("todo.db"), &gorm.Config{})
 
@@ -83,8 +97,7 @@ func main() {
 		c.JSON(200, gin.H{"message": "Todo deleted"})
 	})
 
-
-	router.POST("/json", func(c *gin.Context){
+	router.POST("/json", func(c *gin.Context) {
 		var user User
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
@@ -112,7 +125,7 @@ func main() {
 		ctx.String(200, "User ID: "+id)
 	})
 
-		router.GET("/divide/:a/:b", func(c *gin.Context) {
+	router.GET("/divide/:a/:b", func(c *gin.Context) {
 		a := c.Param("a")
 		b := c.Param("b")
 
