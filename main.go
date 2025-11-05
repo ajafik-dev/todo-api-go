@@ -14,6 +14,12 @@ type Todo struct {
 	Description string `json:"description"`
 }
 
+type User struct {
+	ID    int    `json:"id" form:"id"`
+	Name  string `json:"name" form:"name"`
+	Email string `json:"email" form:"email"`
+}
+
 func main() {
 	router := gin.Default()
 
@@ -77,7 +83,36 @@ func main() {
 		c.JSON(200, gin.H{"message": "Todo deleted"})
 	})
 
-	router.GET("/divide/:a/:b", func(c *gin.Context) {
+
+	router.POST("/json", func(c *gin.Context){
+		var user User
+		if err := c.BindJSON(&user); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, user)
+	})
+
+	router.POST("/form", func(ctx *gin.Context) {
+		var user User
+		if err := ctx.Bind(&user); err != nil {
+			ctx.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(200, user)
+	})
+
+	router.GET("/search", func(ctx *gin.Context) {
+		query := ctx.DefaultQuery("q", "default value")
+		ctx.String(200, "Search query: "+query)
+	})
+
+	router.GET("/user/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		ctx.String(200, "User ID: "+id)
+	})
+
+		router.GET("/divide/:a/:b", func(c *gin.Context) {
 		a := c.Param("a")
 		b := c.Param("b")
 
