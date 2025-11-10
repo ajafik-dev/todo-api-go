@@ -1,4 +1,4 @@
-module ajafik.com/todo
+module todo
 
 go 1.23.5
 
@@ -46,4 +46,4 @@ require (
 	gorm.io/gorm v1.31.0
 )
 
-replace ajafik.com/todo/ => ../
+// replace ajafik.com/todo/ => ../

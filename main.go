@@ -3,9 +3,9 @@ package main
 import (
 	"strconv"
 
-	"ajafik.com/todo/controllers"
-	"ajafik.com/todo/middlewares"
-	"ajafik.com/todo/models"
+	"todo/controllers"
+	"todo/middlewares"
+	"todo/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

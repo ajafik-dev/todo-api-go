@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"ajafik.com/todo/models"
+	"todo/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
